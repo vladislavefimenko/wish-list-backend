@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Posts {% endblock %}</h1>
+    {% for wish in wishes %}
+        <div class='post'>
+            <h2>{{ wish['title'] }}</h2>
+            <p>{{ wish['id'] }}</p>
+        </div>
+    {% endfor %}
+{% endblock %}
