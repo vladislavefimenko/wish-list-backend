@@ -18,25 +18,18 @@ def get_db_connection():
     except ValueError as e:
         print('Cannot connecting to database', e)
 
-
-# -------------- Методы желаний -------------- #
-
-# Метод получения всех желаний
-try:
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM wishes')
-    rows = cursor.fetchall()
-    conn.close()
-
-except ValueError as e:
-    print('Error reading data from SQL table', e)
-
-
 @app.route('/wishList')
 def getWishesList():
+    """Метод получения всех желаний"""
+
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM wishes')
+        rows = cursor.fetchall()
+        conn.close()
+
         wish_list = []
         for row in rows:
             d = collections.OrderedDict()
@@ -51,7 +44,6 @@ def getWishesList():
         print('Cannot getting wishlist', e)
 
 
-# Метод добавления нового желания
 @app.route('/addWish', methods=['POST'])
 def addWish():
     try:
@@ -93,7 +85,6 @@ def addWish():
         print('Cannot add new wish', e)
 
 
-# Метод изменения желания
 @app.route('/wishes/edit', methods=['POST'])
 def wish_edit():
     try:
@@ -116,7 +107,6 @@ def wish_edit():
         print('Cannot edit a wish data', e)
 
 
-# Метод удаления желания
 @app.route('/wishes/delete', methods=['DELETE'])
 def wish_delete():
     try:
@@ -136,7 +126,6 @@ def wish_delete():
         print('Cannot delete a wish', e)
 
 
-# -------------- Методы пользователей -------------- #
 
 @app.route('/userList')
 def getUserList():
@@ -164,7 +153,6 @@ def getUserList():
         print('Cannot getting users list', e)
 
 
-# Метод изменения пользователя
 @app.route('/users/edit', methods=['POST'])
 def user_edit():
     try:
@@ -188,7 +176,7 @@ def user_edit():
     except ValueError as e:
         print('Cannot edit user data', e)
 
-# Метод получения всех пользователей, которые выбрали конкретное желание
+
 @app.route('/users-wish', methods=['POST'])
 def getUsersWishList():
     try:
