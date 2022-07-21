@@ -22,104 +22,118 @@ def get_db_connection():
 # -------------- Методы желаний -------------- #
 
 # Метод получения всех желаний
+try:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * FROM wishes')
+    rows = cursor.fetchall()
+    conn.close()
+
+except ValueError as e:
+    print('Error reading data from SQL table', e)
+
+
 @app.route('/wishList')
 def getWishesList():
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        wish_list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['id'] = row[0]
+            d['title'] = row[1]
+            d['active'] = row[2]
+            wish_list.append(d)
 
-        # sql_Query = 'SELECT * FROM wishes WHERE id=1'
-        # cursor.execute(sql_Query)
-        cursor.execute('SELECT * FROM wishes')
-        rows = cursor.fetchall()
-        conn.close()
+        return json.dumps({"data": wish_list})
 
     except ValueError as e:
-        print('Error reading data from SQL table', e)
-
-    wish_list = []
-    for row in rows:
-        d = collections.OrderedDict()
-        d['id'] = row[0]
-        d['title'] = row[1]
-        d['active'] = row[2]
-        wish_list.append(d)
-
-    return json.dumps({"data": wish_list})
+        print('Cannot getting wishlist', e)
 
 
 # Метод добавления нового желания
 @app.route('/addWish', methods=['POST'])
 def addWish():
-    request_data = request.get_json()
+    try:
+        request_data = request.get_json()
 
-    firstName = None
-    lastName = None
-    wish_id = None
+        firstName = None
+        lastName = None
+        wish_id = None
 
-    if request_data:
-        if 'firstName' in request_data:
-            firstName = request_data['firstName']
+        if request_data:
+            if 'firstName' in request_data:
+                firstName = request_data['firstName']
 
-        if 'lastName' in request_data:
-            lastName = request_data['lastName']
+            if 'lastName' in request_data:
+                lastName = request_data['lastName']
 
-        if 'wish_id' in request_data:
-            wish_id = request_data['wish_id']
+            if 'wish_id' in request_data:
+                wish_id = request_data['wish_id']
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO users (firstName, lastName) VALUES (?, ?)',
-                       (firstName, lastName))
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO users (firstName, lastName) VALUES (?, ?)',
+                           (firstName, lastName))
 
-        user_id = cursor.lastrowid
-        if user_id > 0:
-            cursor.execute('INSERT INTO client_wishes (id_client, id_wish) VALUES (?, ?)',
-                           (user_id, wish_id))
-        else:
-            print('create user error')
-        conn.commit()
-        conn.close()
+            user_id = cursor.lastrowid
+            if user_id > 0:
+                cursor.execute('INSERT INTO client_wishes (id_client, id_wish) VALUES (?, ?)',
+                               (user_id, wish_id))
+            else:
+                print('create user error')
+            conn.commit()
+            conn.close()
 
-        return '''
-            creator is: {}
-            title is {}'''.format(user_id, wish_id)
+            return '''
+                creator is: {}
+                title is {}'''.format(user_id, wish_id)
+
+    except ValueError as e:
+        print('Cannot add new wish', e)
 
 
 # Метод изменения желания
 @app.route('/wishes/edit', methods=['POST'])
 def wish_edit():
-    request_data = request.get_json()
+    try:
+        request_data = request.get_json()
 
-    title = request_data['title']
+        title = request_data['title']
 
-    id = request_data['id']
+        id = request_data['id']
 
-    conn = get_db_connection()
-    conn.execute('UPDATE wishes SET title = ? WHERE id = ?',
-                 (title, id))
-    conn.commit()
-    conn.close()
+        conn = get_db_connection()
+        conn.execute('UPDATE wishes SET title = ? WHERE id = ?',
+                     (title, id))
+        conn.commit()
+        conn.close()
 
-    return '''
-        title is {}'''.format(title)
+        return '''
+                title is {}'''.format(title)
+
+    except ValueError as e:
+        print('Cannot edit a wish data', e)
 
 
 # Метод удаления желания
 @app.route('/wishes/delete', methods=['DELETE'])
 def wish_delete():
-    request_data = request.get_json()
+    try:
+        request_data = request.get_json()
 
-    id = request_data['id']
+        id = request_data['id']
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM wishes WHERE id = ?',
-                   (id,))
-    conn.commit()
-    conn.close()
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM wishes WHERE id = ?',
+                       (id,))
+        conn.commit()
+        conn.close()
 
-    return ''
+        return ''
+    except ValueError as e:
+        print('Cannot delete a wish', e)
 
 
 # -------------- Методы пользователей -------------- #
@@ -136,40 +150,43 @@ def getUserList():
         rows = cursor.fetchall()
         conn.close()
 
+        user_list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['id'] = row[0]
+            d['firstName'] = row[1]
+            d['lastName'] = row[2]
+            user_list.append(d)
+
+        return json.dumps({"data": user_list})
+
     except ValueError as e:
-        print('Error reading data from SQL table', e)
-
-    user_list = []
-    for row in rows:
-        d = collections.OrderedDict()
-        d['id'] = row[0]
-        d['firstName'] = row[1]
-        d['lastName'] = row[2]
-        user_list.append(d)
-
-    return json.dumps({"data": user_list})
+        print('Cannot getting users list', e)
 
 
 # Метод изменения пользователя
 @app.route('/users/edit', methods=['POST'])
 def user_edit():
-    request_data = request.get_json()
+    try:
+        request_data = request.get_json()
 
-    first_name = request_data['firstName']
+        first_name = request_data['firstName']
 
-    last_name = request_data['lastName']
+        last_name = request_data['lastName']
 
-    user_id = request_data['id']
+        user_id = request_data['id']
 
-    conn = get_db_connection()
-    conn.execute('UPDATE users SET firstName = ?, lastName = ? WHERE id = ?',
-                 (first_name, last_name, user_id))
-    conn.commit()
-    conn.close()
+        conn = get_db_connection()
+        conn.execute('UPDATE users SET firstName = ?, lastName = ? WHERE id = ?',
+                     (first_name, last_name, user_id))
+        conn.commit()
+        conn.close()
 
-    return '''
-        title is {}'''.format(id)
+        return '''
+            title is {}'''.format(id)
 
+    except ValueError as e:
+        print('Cannot edit user data', e)
 
 # Метод получения всех пользователей, которые выбрали конкретное желание
 @app.route('/users-wish', methods=['POST'])
@@ -191,14 +208,14 @@ def getUsersWishList():
         rows = cursor.fetchall()
         conn.close()
 
+        list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['id'] = row[0]
+            d['fullName'] = row[1]
+            list.append(d)
+
+        return json.dumps({"data": list})
+
     except ValueError as e:
-        print('Error reading data from SQL table', e)
-
-    list = []
-    for row in rows:
-        d = collections.OrderedDict()
-        d['id'] = row[0]
-        d['fullName'] = row[1]
-        list.append(d)
-
-    return json.dumps({"data": list})
+        print('Cannot getting user list', e)
